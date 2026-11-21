@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCスペック取得ツール（Googleフォーム入力用）</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #d1d5db;
+      --success: #059669;
+      --warn-bg: #fffbeb;
+      --warn-border: #fcd34d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 740px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .notice {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 1fr; gap: 6px; }
+    }
+    .label {
+      font-weight: bold;
+      padding-top: 8px;
+      font-size: 0.95rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      resize: vertical;
+      background: #f9fafb;
+      color: var(--text);
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-copy {
+      background: #e5e7eb;
+      color: var(--text);
+      min-width: 84px;
+    }
+    .btn-copy:hover { background: #d1d5db; }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .status {
+      color: var(--success);
+      font-weight: bold;
+      font-size: 0.9rem;
+      min-height: 1.4em;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .cmd-box {
+      background: #111827;
+      color: #f9fafb;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: Consolas, monospace;
+      font-size: 0.82rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 10px 0;
+    }
+    .step { font-size: 0.9rem; margin: 8px 0; }
+    .exe-link {
+      display: inline-block;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .exe-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>PCスペック取得ツール <span class="badge" id="modeBadge">ブラウザ簡易取得</span></h1>
+      <p class="subtitle">各「コピー」ボタンを押して、Googleフォームの該当欄に貼り付け（Ctrl+V）してください。</p>
+
+      <div class="notice" id="browserNotice">
+        ※ ブラウザのセキュリティ制限により、サイト単体では<strong>「CPUの型番」「8GBを超える正確なメモリ容量・枚数」「SSDの容量・型番」</strong>が取得できません。正確な全パーツを出したい場合は、下の「全パーツ取得モード」またはWindowsアプリ版をご利用ください。
+      </div>
+
+      <div class="row">
+        <div class="label">OS</div>
+        <textarea id="osVal" rows="1" readonly></textarea>
+        <button class="btn-copy" onclick="copyField('osVal', 'OS')">コピー</button>
+      </div>
+
+      <div class="row">
+        <div class="label">CPU</div>
+        <textarea id="cpuVal" rows="1" readonly></textarea>
+        <button class="btn-copy" onclick="copyField('cpuVal', 'CPU')">コピー</button>
+      </div>
+
+      <div class="row">
+        <div class="label">GPU</div>
+        <textarea id="gpuVal" rows="2" readonly></textarea>
+        <button class="btn-copy" onclick="copyField('gpuVal', 'GPU')">コピー</button>
+      </div>
+
+      <div class="row">
+        <div class="label">メモリ</div>
+        <textarea id="ramVal" rows="1" readonly></textarea>
+        <button class="btn-copy" onclick="copyField('ramVal', 'メモリ')">コピー</button>
+      </div>
+
+      <div class="row">
+        <div class="label">SSD / ストレージ</div>
+        <textarea id="ssdVal" rows="2" readonly></textarea>
+        <button class="btn-copy" onclick="copyField('ssdVal', 'SSD')">コピー</button>
+      </div>
+
+      <div class="actions">
+        <div class="status" id="statusMsg"></div>
+        <button class="btn-primary" onclick="copyAll()">全項目をまとめてコピー（自由記述欄用）</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 8px; font-size:1.1rem;">正確な全パーツを取得する（Windows・ダウンロード不要）</h2>
+      <p class="subtitle" style="margin-bottom:10px;">
+        SSDやメモリ枚数まで正確に取得したい場合は、以下のコマンドを実行して結果を貼り付けてください（外部通信は一切しません）。
+      </p>
+
+      <div class="step"><strong>手順1：</strong> 下のコマンドをコピーします。</div>
+      <div class="cmd-box" id="psCmd">@{cpu=@(Get-CimInstance Win32_Processor|%{"$(($_.Name -replace '\s+',' ').Trim()) ($($_.NumberOfCores)コア/$($_.NumberOfLogicalProcessors)スレッド)"});gpu=@(Get-CimInstance Win32_VideoController|%{$_.Name.Trim()});ram=@(Get-CimInstance Win32_PhysicalMemory|%{[math]::Round($_.Capacity/1GB)});ssd=@(try{Get-PhysicalDisk|%{"$($_.FriendlyName.Trim()) [$($_.MediaType)/$($_.BusType)] ($([math]::Round($_.Size/1000000000))GB)"}}catch{Get-CimInstance Win32_DiskDrive|%{"$($_.Model.Trim()) ($([math]::Round($_.Size/1000000000))GB)"}})}|ConvertTo-Json -Compress|Set-Clipboard</div>
+      <button class="btn-copy" onclick="copyField('psCmd', 'コマンド')" style="margin-bottom:12px;">コマンドをコピー</button>
+
+      <div class="step"><strong>手順2：</strong> Windowsキーを押して <code>powershell</code> と入力して開き、右クリック（貼り付け）→ <strong>Enter</strong> を押します（自動でコピーされます）。</div>
+      <div class="step"><strong>手順3：</strong> 下の枠をクリックして <strong>Ctrl+V</strong> で貼り付けると、上の欄が正確なスペックに更新されます。</div>
+      <textarea id="pasteArea" rows="2" placeholder="ここに PowerShell の結果（Ctrl+V）を貼り付けてください..." style="background:#fff;"></textarea>
+
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid #e5e7eb;">
+        <a class="exe-link" href="https://github.com/yuchike/PC-/releases" target="_blank" rel="noopener">
+          ▶ コマンド操作が難しい場合は Windows版アプリ（EXE）をダウンロード
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let statusTimer = null;
+
+    function showStatus(msg) {
+      const el = document.getElementById("statusMsg");
+      el.textContent = msg;
+      if (statusTimer) clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => { el.textContent = ""; }, 2200);
+    }
+
+    async function copyText(text, label) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showStatus(`✓ ${label} をコピーしました`);
+      } catch {
+        const tmp = document.createElement("textarea");
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        showStatus(`✓ ${label} をコピーしました`);
+      }
+    }
+
+    function copyField(id, label) {
+      const el = document.getElementById(id);
+      const val = (el.value !== undefined ? el.value : el.textContent).trim();
+      copyText(val, label);
+    }
+
+    function copyAll() {
+      const lines = [
+        `CPU: ${document.getElementById("cpuVal").value.trim()}`,
+        `GPU: ${document.getElementById("gpuVal").value.trim()}`,
+        `メモリ: ${document.getElementById("ramVal").value.trim()}`,
+        `SSD: ${document.getElementById("ssdVal").value.trim().replace(/\n/g, " / ")}`
+      ];
+      copyText(lines.join("\n"), "全項目");
+    }
+
+    function cleanGpuName(raw) {
+      if (!raw) return "取得不可";
+      // Chrome/Edgeの "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 (0x...) Direct3D11...)" を見やすく整形
+      const m = raw.match(/^ANGLE\s*\([^,]+,\s*([^,()]+)/i);
+      if (m && m[1]) {
+        return m[1].replace(/Direct3D.*$/i, "").trim();
+      }
+      return raw;
+    }
+
+    function getGPU() {
+      try {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (!gl) return "WebGL非対応のため取得不可";
+        const ext = gl.getExtension("WEBGL_debug_renderer_info");
+        const raw = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        return cleanGpuName(raw);
+      } catch {
+        return "取得不可";
+      }
+    }
+
+    async function detectOS() {
+      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        try {
+          const info = await navigator.userAgentData.getHighEntropyValues(["platform", "platformVersion", "architecture"]);
+          if (info.platform === "Windows") {
+            const major = parseInt((info.platformVersion || "0").split(".")[0], 10);
+            const winVer = major >= 13 ? "Windows 11" : "Windows 10";
+            return `${winVer} (${info.architecture || "x64"})`;
+          }
+          return `${info.platform} (${info.architecture || ""})`.trim();
+        } catch {}
+      }
+      const ua = navigator.userAgent;
+      if (ua.includes("Windows NT 10.0")) return "Windows 10 / 11";
+      if (ua.includes("Mac OS X")) return "macOS";
+      if (ua.includes("Linux")) return "Linux";
+      return navigator.platform || "不明";
+    }
+
+    async function initBrowserSpecs() {
+      document.getElementById("osVal").value = await detectOS();
+
+      const threads = navigator.hardwareConcurrency;
+      document.getElementById("cpuVal").value = threads
+        ? `${threads} スレッド（型番はブラウザ制限により取得不可）`
+        : "取得不可";
+
+      document.getElementById("gpuVal").value = getGPU();
+
+      const mem = navigator.deviceMemory;
+      if (mem) {
+        document.getElementById("ramVal").value = mem >= 8
+          ? `8GB 以上（ブラウザ仕様の上限により正確な容量は取得不可）`
+          : `約 ${mem}GB`;
+      } else {
+        document.getElementById("ramVal").value = "このブラウザでは取得不可";
+      }
+
+      document.getElementById("ssdVal").value = "ブラウザのセキュリティ制限により取得不可";
+    }
+
+    // PowerShell結果の貼り付け解析
+    document.getElementById("pasteArea").addEventListener("input", (e) => {
+      const raw = e.target.value.trim();
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        if (data.cpu) {
+          const cpus = Array.isArray(data.cpu) ? data.cpu : [data.cpu];
+          document.getElementById("cpuVal").value = cpus.join(" / ");
+        }
+        if (data.gpu) {
+          const gpus = Array.isArray(data.gpu) ? data.gpu : [data.gpu];
+          document.getElementById("gpuVal").value = gpus.join(" / ");
+        }
+        if (data.ram) {
+          const rams = Array.isArray(data.ram) ? data.ram : [data.ram];
+          const total = rams.reduce((a, b) => a + Number(b || 0), 0);
+          const unique = [...new Set(rams)];
+          const detail = unique.length === 1 ? `${unique[0]}GB×${rams.length}枚` : `${rams.map(r => r + "GB").join("+")} / ${rams.length}枚`;
+          document.getElementById("ramVal").value = `${total}GB (${detail})`;
+        }
+        if (data.ssd) {
+          const ssds = Array.isArray(data.ssd) ? data.ssd : [data.ssd];
+          document.getElementById("ssdVal").value = ssds.map(s => {
+            return s.replace(/\((\d+)GB\)/, (_, gb) => {
+              const n = Number(gb);
+              return n >= 1000 ? `(${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}TB)` : `(${n}GB)`;
+            });
+          }).join("\n");
+        }
+        document.getElementById("modeBadge").textContent = "全パーツ取得済み";
+        document.getElementById("modeBadge").style.background = "#d1fae5";
+        document.getElementById("modeBadge").style.color = "#065f46";
+        document.getElementById("browserNotice").style.display = "none";
+        showStatus("✓ 正確なスペックを読み込みました！");
+      } catch {
+        // JSON以外は無視
+      }
+    });
+
+    initBrowserSpecs();
+  </script>
+</body>
+</html>
